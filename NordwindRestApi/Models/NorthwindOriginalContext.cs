@@ -35,6 +35,7 @@ namespace NordwindRestApi.Models
         public virtual DbSet<ProductSalesFor1997> ProductSalesFor1997s { get; set; } = null!;
         public virtual DbSet<ProductsAboveAveragePrice> ProductsAboveAveragePrices { get; set; } = null!;
         public virtual DbSet<ProductsByCategory> ProductsByCategories { get; set; } = null!;
+        public virtual DbSet<ProductsDailySale> ProductsDailySales { get; set; } = null!;
         public virtual DbSet<QuarterlyOrder> QuarterlyOrders { get; set; } = null!;
         public virtual DbSet<Region> Regions { get; set; } = null!;
         public virtual DbSet<SalesByCategory> SalesByCategories { get; set; } = null!;
@@ -44,13 +45,13 @@ namespace NordwindRestApi.Models
         public virtual DbSet<SummaryOfSalesByYear> SummaryOfSalesByYears { get; set; } = null!;
         public virtual DbSet<Supplier> Suppliers { get; set; } = null!;
         public virtual DbSet<Territory> Territories { get; set; } = null!;
+        public virtual DbSet<User> Users { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             if (!optionsBuilder.IsConfigured)
-            {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseSqlServer("Server=KOTIKONE;Database=NorthwindOriginal;Trusted_Connection=True;");
+            {               
+                optionsBuilder.UseSqlServer("Server=Secret");
             }
         }
 
@@ -238,11 +239,6 @@ namespace NordwindRestApi.Models
                 entity.Property(e => e.Title).HasMaxLength(30);
 
                 entity.Property(e => e.TitleOfCourtesy).HasMaxLength(25);
-
-                entity.HasOne(d => d.ReportsToNavigation)
-                    .WithMany(p => p.InverseReportsToNavigation)
-                    .HasForeignKey(d => d.ReportsTo)
-                    .HasConstraintName("FK_Employees_Employees");
 
                 entity.HasMany(d => d.Territories)
                     .WithMany(p => p.Employees)
@@ -596,6 +592,17 @@ namespace NordwindRestApi.Models
                 entity.Property(e => e.QuantityPerUnit).HasMaxLength(20);
             });
 
+            modelBuilder.Entity<ProductsDailySale>(entity =>
+            {
+                entity.HasNoKey();
+
+                entity.ToView("ProductsDailySales");
+
+                entity.Property(e => e.OrderDate).HasColumnType("datetime");
+
+                entity.Property(e => e.ProductName).HasMaxLength(40);
+            });
+
             modelBuilder.Entity<QuarterlyOrder>(entity =>
             {
                 entity.HasNoKey();
@@ -753,6 +760,19 @@ namespace NordwindRestApi.Models
                     .HasForeignKey(d => d.RegionId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("FK_Territories_Region");
+            });
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.Property(e => e.Email).HasMaxLength(50);
+
+                entity.Property(e => e.FirstName).HasMaxLength(50);
+
+                entity.Property(e => e.LastName).HasMaxLength(50);
+
+                entity.Property(e => e.Password).HasMaxLength(200);
+
+                entity.Property(e => e.UserName).HasMaxLength(10);
             });
 
             OnModelCreatingPartial(modelBuilder);
